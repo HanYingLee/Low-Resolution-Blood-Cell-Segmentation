@@ -24,6 +24,7 @@ The ground truth high-resolution images are resized to 256×256 pixels to serve 
 All the aforementioned data preprocess are done in augmentation pipeline.
 
 * Training Setup
+  
 During training, the SSR model learns to upscale the 64×64 LR images to 256×256 HR images. The downscaled HR images (256×256) are used as the ground truth for calculating loss and optimizing the model.
 On the other hand, U-Net will be trained on 256×256 SSR-enhanced images as input and the original 1200×1200 masks are resized to 256*256 as ground truth.
 A small dataset are provided in `data` folder. With a total of 80 training images, 10 validation images, and 10 testing images.
