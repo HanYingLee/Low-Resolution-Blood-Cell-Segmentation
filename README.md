@@ -173,7 +173,6 @@ The following results were obtained:
 
 # Citation
 
-[MICCAI 2024 Oral] The official code of "TinyU-Net: Lighter Yet Better U-Net with Cascaded Multi-receptive Fields".
-https://github.com/ChenJunren-Lab/TinyU-Net
+[MICCAI 2024 Oral] The official code of "TinyU-Net: Lighter Yet Better U-Net with Cascaded Multi-receptive Fields".https://github.com/ChenJunren-Lab/TinyU-Net
 
 [NTIRE 2022, EfficientSR] MobileSR: A Mobile-friendly Transformer for Efficient Image Super-Resolution. https://github.com/sunny2109/MobileSR-NTIRE2022
