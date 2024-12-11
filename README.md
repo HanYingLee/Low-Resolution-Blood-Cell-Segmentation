@@ -171,4 +171,9 @@ The following results were obtained:
     |-- ssr_model_checkpoints/ # SSR model checkpoints
     |-- unet_model_checkpoints/ # U-Net model checkpoints
 
+# Citation
 
+[MICCAI 2024 Oral] The official code of "TinyU-Net: Lighter Yet Better U-Net with Cascaded Multi-receptive Fields".
+https://github.com/ChenJunren-Lab/TinyU-Net
+
+[NTIRE 2022, EfficientSR] MobileSR: A Mobile-friendly Transformer for Efficient Image Super-Resolution. https://github.com/sunny2109/MobileSR-NTIRE2022
