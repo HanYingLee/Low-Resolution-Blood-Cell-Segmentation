@@ -34,6 +34,7 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
             # Apply test transform to LR and HR images
             lr_tensor = lr_test_transform(lr_image).unsqueeze(0).to(device)
             crop_size = 1200  # Example crop size, adjust based on your dataset
+
             hr_resized = hr_image.crop((
                 (hr_image.width - crop_size) // 2,
                 (hr_image.height - crop_size) // 2,
@@ -51,8 +52,7 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
 
             # Save the SR image
             sr_image.save(output_path)
-            print(sr_array.min(),sr_array.max())
-            print(hr_array.min(),hr_array.max())
+
             # Calculate PSNR
             psnr = peak_signal_noise_ratio(hr_array, sr_array, data_range=255)
 
