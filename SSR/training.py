@@ -13,16 +13,11 @@ def normalize_to_range(image, min_val, max_val):
 
 def compute_psnr(outputs, hr_images):
     """Compute the PSNR for the outputs and ground truth high-resolution images."""
-    # Normalize HR image to [0, 1] range based on its min and max values
-    outputs = (outputs - outputs.min()) / (outputs.max() - outputs.min())
     outputs_np = outputs.cpu().detach().numpy()
     hr_images_np = hr_images.cpu().detach().numpy()
-    #print(f"Model output range: Min = {outputs.min().item()}, Max = {outputs.max().item()}")
-
-    psnr = peak_signal_noise_ratio(hr_images_np, outputs_np, data_range=1.0)
+    psnr = peak_signal_noise_ratio(hr_images_np, outputs_np)
     return psnr
 
-# Helper function to normalize the model's output to [0, 1]
 
 # Validation function
 def validate_one_epoch(model, dataloader, criterion, device):
@@ -34,20 +29,18 @@ def validate_one_epoch(model, dataloader, criterion, device):
         for lr_images, hr_images in tqdm(dataloader, desc="Validation"):
             lr_images, hr_images = lr_images.to(device), hr_images.to(device)
             outputs = model(lr_images)
-
-            #outputs = normalize_output(outputs)  # Normalize model output to [0, 1]
-
-            # Calculate loss and PSNR
             loss = criterion(outputs, hr_images)
-            psnr = compute_psnr(outputs, hr_images)
-
             val_loss += loss.item()
-            val_psnr += psnr
+            val_psnr += compute_psnr(outputs, hr_images)
 
     avg_loss = val_loss / len(dataloader)
     avg_psnr = val_psnr / len(dataloader)
     return avg_loss, avg_psnr
 
+
+
+
+# Training function
 
 # Training function
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
@@ -59,18 +52,11 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
         lr_images, hr_images = lr_images.to(device), hr_images.to(device)
         optimizer.zero_grad()
         outputs = model(lr_images)
-
-        #outputs = normalize_output(outputs)  # Normalize model output to [0, 1]
-        # Calculate loss and PSNR
         loss = criterion(outputs, hr_images)
-        psnr = compute_psnr(outputs, hr_images)
-
-        # Backpropagation and optimization
         loss.backward()
         optimizer.step()
-
         epoch_loss += loss.item()
-        epoch_psnr += psnr
+        epoch_psnr += compute_psnr(outputs, hr_images)
 
     avg_loss = epoch_loss / len(dataloader)
     avg_psnr = epoch_psnr / len(dataloader)

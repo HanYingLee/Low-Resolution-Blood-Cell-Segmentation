@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from skimage.metrics import peak_signal_noise_ratio
 from SSR.transforms import get_ssr_test_transforms
+from torchvision import transforms
 
 def test_model(model, input_folder, ground_truth_folder, output_folder, device):
 
@@ -12,7 +13,7 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
 
     psnr_scores = []
 
-    lr_test_transform,  sr_transform = get_ssr_test_transforms()
+    lr_test_transform = get_ssr_test_transforms()
 
     for image_name in os.listdir(input_folder):
         if not (image_name.endswith(".png") or image_name.endswith(".jpg")):
@@ -33,8 +34,7 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
 
             # Apply test transform to LR and HR images
             lr_tensor = lr_test_transform(lr_image).unsqueeze(0).to(device)
-            crop_size = 1200  # Example crop size, adjust based on your dataset
-
+            crop_size = 1200
             hr_resized = hr_image.crop((
                 (hr_image.width - crop_size) // 2,
                 (hr_image.height - crop_size) // 2,
@@ -47,14 +47,13 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
             sr_tensor = model(lr_tensor).squeeze(0).cpu()
 
             # Convert the super-resolved tensor back to image
-            sr_image = sr_transform(sr_tensor)#transforms.ToPILImage()(sr_tensor)
-            sr_array = np.array(sr_image)
-
-            # Save the SR image
+            sr_image = transforms.ToPILImage()(sr_tensor)
             sr_image.save(output_path)
 
-            # Calculate PSNR
-            psnr = peak_signal_noise_ratio(hr_array, sr_array, data_range=255)
+            # Convert HR and SR images to numpy arrays for metric calculation
+            sr_array = np.array(sr_image)
+            # Calculate PSNR and SSIM
+            psnr = peak_signal_noise_ratio(hr_array, sr_array)
 
             # Append the scores to the lists
             psnr_scores.append(psnr)
