@@ -44,17 +44,17 @@ Install the required libraries using:
 
 Run the training process for the SSR model:
 
-    python3 main.py --model ssr --mode train --epochs 10
+    python3 main.py --model ssr --mode train 
 
 The training will generate:
 
 Model checkpoints and training progress CSV are stored in the `ssr_model_checkpoints` folder.
 
-Example training results (After 10 epochs with only the data in the data folder):
+Example of the best training result within 20 epochs:
 
-    * Train Loss: 0.0962, Train PSNR: 14.68
+    * Train Loss: 0.1815, Train PSNR: 14.80
 
-    * Validation Loss: 0.0406, Val PSNR: 21.5
+    * Validation Loss: 0.0681, Val PSNR: 24.71
 
 ### Step 2: Generate Data for Training U-Net
 
