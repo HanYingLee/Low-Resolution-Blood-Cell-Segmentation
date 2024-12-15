@@ -193,7 +193,7 @@ def evaluate_saved_images(gt_folder, pred_folder):
 
 
 # Paths to the folders
-gt_folder = 'datatest_tmp/mask/'
+gt_folder = 'data/test_tmp/mask/'
 pred_folder = 'unet_outputs/'
 output_folder = 'per_cell_folder/'
 
