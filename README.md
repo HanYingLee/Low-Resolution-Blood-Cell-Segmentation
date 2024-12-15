@@ -72,7 +72,8 @@ Approximate Average Train PSNR: 25.42
 
 * Validation Data:
 
-        python3 main.py --model ssr --mode test \
+        python3 main.py --model ssr --model-path 'ssr_model_checkpoints/`your_best_ssr_model.pth`' \
+        --mode test \
         --ssr-test-input-folder 'data/val_tmp/img' \
         --ssr-test-ground-truth-folder 'data/val_tmp/img' \
         --ssr-model-output-folder 'ssr_val'
@@ -147,7 +148,7 @@ Results:
 For evaluating individual cells, run 
 
     python3 per_cell_evaluation.py
-Default ground-truth folder is `datatest_tmp/mask/` and prediction folder is `unet_outputs/`
+Default ground-truth folder is `data/test_tmp/mask/` and prediction folder is `unet_outputs/`
 
 The following results were obtained:
 
