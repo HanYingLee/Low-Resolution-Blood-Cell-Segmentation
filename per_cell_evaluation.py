@@ -146,6 +146,12 @@ def evaluate_and_store_by_location(gt_folder, pred_folder, output_folder, min_si
     avg_dice = total_dice / num_images if num_images > 0 else 0
     avg_iou = total_iou / num_images if num_images > 0 else 0
 
+<<<<<<< HEAD
+=======
+    #print(f"Average Dice Score: {avg_dice:.4f}")
+    #print(f"Average IoU Score: {avg_iou:.4f}")
+    #print(f"GT and predicted cells saved in {output_folder}")
+>>>>>>> 0b20206 (clear bug)
 
 
 def evaluate_saved_images(gt_folder, pred_folder):
