@@ -18,13 +18,14 @@ def main():
     parser.add_argument('--ssr-test-input-folder', type=str, default="data/test_tmp/img", help="Folder containing low-resolution input images (for testing)")
     parser.add_argument('--ssr-test-ground-truth-folder', type=str, default="data/test_tmp/img", help="Folder containing ground truth HR images (for testing)")
     parser.add_argument('--ssr-model-output-folder', type=str, default="ssr_model_checkpoints/", help="Folder to save SSR model checkpoints")
-    parser.add_argument('--ssr-output-folder', type=str, default="ssr_outputs/", help="Folder to save super-resolved images")
+    parser.add_argument('--ssr-output-folder', type=str, default="ssr_test/", help="Folder to save super-resolved images")
+    parser.add_argument('--rescale-size', type=int, default=128, help="Rescale test image size")
     parser.add_argument('--unet-train-folder', type=str, default="ssr_train/", help="Folder containing training data (SSR output training images)")
-    parser.add_argument('--unet-train-mask-folder', type=str, default="data/train_tmp/mask", help="Folder containing training mask")
+    parser.add_argument('--unet-train-mask-folder', type=str, default="data/train_tmp/eroded_mask", help="Folder containing training mask")
     parser.add_argument('--unet-val-folder', type=str, default="ssr_val/", help="Folder containing validation data (SSR output validation images)")
-    parser.add_argument('--unet-val-mask-folder', type=str, default="data/val_tmp/mask", help="Folder containing validation mask")
-    parser.add_argument('--unet-test-input-folder', type=str, default="ssr_outputs/", help="Folder containing validation data (SSR output validation images)")
-    parser.add_argument('--unet-test-mask-folder', type=str, default="data/test_tmp/mask", help="Folder containing validation mask")
+    parser.add_argument('--unet-val-mask-folder', type=str, default="data/val_tmp/eroded_mask", help="Folder containing validation mask")
+    parser.add_argument('--unet-test-input-folder', type=str, default="ssr_test/", help="Folder containing validation data (SSR output validation images)")
+    parser.add_argument('--unet-test-mask-folder', type=str, default="data/test_tmp/eroded_mask", help="Folder containing validation mask")
     parser.add_argument('--unet-model-output-folder', type=str, default="unet_model_checkpoints/", help="Folder to save U-Net model checkpoints")
     parser.add_argument('--unet-output-folder', type=str, default="unet_outputs/", help="Folder to save U-Net segmentation results")
     parser.add_argument('--epochs', type=int, default=20, help="Number of training epochs")
@@ -77,7 +78,7 @@ def main():
         model = load_model(args.model, args.model_path, device=device)
 
         if args.model == 'ssr':
-            ssr_test_model(model, args.ssr_test_input_folder, args.ssr_test_ground_truth_folder, args.ssr_output_folder, device)
+            ssr_test_model(model, args.ssr_test_input_folder, args.ssr_test_ground_truth_folder, args.ssr_output_folder, args.rescale_size, device)
         else:
             if not args.unet_test_input_folder:
                 raise ValueError("Both --test-folder is required for testing.")

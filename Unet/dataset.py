@@ -36,3 +36,4 @@ class CustomDataset(Dataset):
             mask = self.mask_transform(mask)
 
         return image, mask
+

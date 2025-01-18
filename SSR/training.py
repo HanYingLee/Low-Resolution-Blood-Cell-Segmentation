@@ -56,6 +56,7 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
+        outputs = outputs * 0.5 + 0.5
         epoch_psnr += compute_psnr(outputs, hr_images)
 
     avg_loss = epoch_loss / len(dataloader)

@@ -6,14 +6,14 @@ from skimage.metrics import peak_signal_noise_ratio
 from SSR.transforms import get_ssr_test_transforms
 from torchvision import transforms
 
-def test_model(model, input_folder, ground_truth_folder, output_folder, device):
+def test_model(model, input_folder, ground_truth_folder, output_folder, rescale_size, device):
 
     model.eval()
     os.makedirs(output_folder, exist_ok=True)
 
     psnr_scores = []
 
-    lr_test_transform = get_ssr_test_transforms()
+    lr_test_transform = get_ssr_test_transforms(rescale_size)
 
     for image_name in os.listdir(input_folder):
         if not (image_name.endswith(".png") or image_name.endswith(".jpg")):
@@ -40,7 +40,7 @@ def test_model(model, input_folder, ground_truth_folder, output_folder, device):
                 (hr_image.height - crop_size) // 2,
                 (hr_image.width + crop_size) // 2,
                 (hr_image.height + crop_size) // 2
-            )).resize((256, 256), Image.BICUBIC)
+            )).resize((512, 512), Image.BICUBIC)
             hr_array = np.array(hr_resized)
 
             # Perform inference

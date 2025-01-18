@@ -10,7 +10,7 @@ from Unet.transforms import get_unet_test_transforms
 def apply_mask_transform(mask, transform_mask):
     mask = transform_mask(mask)
     mask = mask.squeeze(0).numpy()  # Remove batch dimension and convert to NumPy
-    mask = (mask > 0.5).astype(np.uint8)  # Threshold if necessary
+    mask = (mask > 0.5).astype(np.uint8)
     return mask
 
 # Inference function
@@ -26,16 +26,16 @@ def perform_inference(model, input_image_path, output_mask_path, device):
         output = model(image)
 
     output_mask = torch.sigmoid(output).cpu().numpy()
-    output_mask = (output_mask[0, 1] > 0.5).astype(np.uint8) * 255  # Convert to binary mask
+    output_mask = (output_mask[0, 1] > 0.5).astype(np.uint8) * 255
     cv2.imwrite(output_mask_path, output_mask)
 
 # Evaluation function
 def test_model(model, input_image_folder, ground_truth_folder, output_folder, device):
     transform_test, transform_mask = get_unet_test_transforms()
     precision_list, recall_list = [], []
-    dice_list, iou_list = [], []
+    f1_list, dice_list, iou_list = [], [], []
 
-    # Ensure output folder exists
+
     os.makedirs(output_folder, exist_ok=True)
 
     for image_name in tqdm(os.listdir(input_image_folder)):
@@ -44,10 +44,10 @@ def test_model(model, input_image_folder, ground_truth_folder, output_folder, de
             output_path = os.path.join(output_folder, f"pred_{image_name}")
             ground_truth_path = os.path.join(ground_truth_folder, image_name)
 
-            # Perform inference and save prediction
+
             perform_inference(model, input_path, output_path, device)
 
-            # Load prediction and ground truth masks
+
             pred_mask = cv2.imread(output_path, cv2.IMREAD_GRAYSCALE)
             true_mask = cv2.imread(ground_truth_path, cv2.IMREAD_GRAYSCALE)
 
@@ -55,29 +55,35 @@ def test_model(model, input_image_folder, ground_truth_folder, output_folder, de
                 print(f"Error: Missing file - {output_path if pred_mask is None else ground_truth_path}")
                 continue
 
-            # Apply mask transformations
+
             true_mask = apply_mask_transform(true_mask, transform_mask)
 
-            # Post-process predicted mask
+
             pred_mask = pred_mask // 255  # Scale to 0 and 1
 
-            # Calculate metrics
+            # Calculate precision, recall, F1, Dice, IoU
             precision = precision_score(true_mask.flatten(), pred_mask.flatten())
             recall = recall_score(true_mask.flatten(), pred_mask.flatten())
-            dice = f1_score(true_mask.flatten(), pred_mask.flatten())
+            f1 = f1_score(true_mask.flatten(), pred_mask.flatten())
 
+            # Compute Dice Coefficient
+            dice = (2 * np.sum(true_mask * pred_mask)) / (np.sum(true_mask) + np.sum(pred_mask) + 1e-6)
+
+            # Calculate IoU
             intersection = np.logical_and(true_mask, pred_mask).sum()
             union = np.logical_or(true_mask, pred_mask).sum()
             iou = intersection / union if union > 0 else 0
 
-            # Append metrics
+
             precision_list.append(precision)
             recall_list.append(recall)
+            f1_list.append(f1)
             dice_list.append(dice)
             iou_list.append(iou)
 
-    # Print aggregated metrics
+
     print(f"Precision: {np.mean(precision_list):.4f}")
     print(f"Recall: {np.mean(recall_list):.4f}")
+    print(f"F1 Score: {np.mean(f1_list):.4f}")
     print(f"Dice Coefficient: {np.mean(dice_list):.4f}")
     print(f"IoU: {np.mean(iou_list):.4f}")

@@ -2,31 +2,31 @@
 
 ## Overview
 
-This project aims to develop lightweight models for blood cell segmentation, optimized for Computer-Aided Diagnostic (CAD) systems requiring fast processing and low computational resources.
+This project aims to develop lightweight models for blood cell segmentation, optimized for low resource settings that require fast processing and low computational resources.
 
-SSR (Super-Resolution Reconstruction) is used to enhance low-resolution images, enabling detail preservation, and U-Net for segmentation, leveraging its efficient encoder-decoder design for precise cell boundary detection. Together, these models balance efficiency and accuracy for resource-constrained environments.
+SR is used to enhance low-resolution images, enabling detail preservation, and U-Net for segmentation, leveraging its efficient encoder-decoder design for precise cell boundary detection. Together, these models balance efficiency and accuracy for resource-constrained environments.
 
 Light-weight models such as MobileSR and TinyUnet are explored in this project.
 
-Our model is designed to perform super-resolution tasks, generating high-quality HR images from low-resolution LR inputs. However, due to resource constraints such as memory and computation limits, we work with reduced image sizes during training. Below, we explain the resizing process:
+Our model is designed to perform super-resolution tasks, generating high-quality HR images from low-resolution LR inputs. However, due to resource constraints such as memory and computation limits, we work with reduced image sizes to during training. Below, we explain the resizing process:
 
 * Original Dataset
 The original dataset contains images with a resolution of 1200×1200 pixels.
 * Creating Low-Resolution (LR) Images
-To simulate low-resolution inputs, the original images are downscaled to 64×64 pixels using bicubic interpolation. These LR images serve as the inputs to the SSR model during training.
+To simulate low-resolution inputs, the original images are downscaled to 128×128 pixels using bicubic interpolation. These LR images serve as the inputs to the SSR model during training.
 
 * Creating High-Resolution (HR) Training Targets
-The ground truth high-resolution images are resized to 256×256 pixels to serve as the training targets. While this is smaller than the original 1200×1200 resolution, it allows us to:
+The ground truth high-resolution images are resized to 512×512 pixels to serve as the training targets. While this is smaller than the original 1200×1200 resolution, it allows us to:
 
 - Reduce the computational and memory requirements for training.
-- Focus on learning effective 4× super-resolution (from 64×64 to 256×256).
+- Focus on learning effective 4× super-resolution (from 128×128 to 512×512).
 
 All the aforementioned data preprocess are done in augmentation pipeline.
 
 * Training Setup
   
-During training, the SSR model learns to upscale the 64×64 LR images to 256×256 HR images. The downscaled HR images (256×256) are used as the ground truth for calculating loss and optimizing the model.
-On the other hand, U-Net will be trained on 256×256 SSR-enhanced images as input and the original 1200×1200 masks are resized to 256*256 as ground truth.
+During training, the SSR model learns to upscale the 128×128 LR images to 512×512 HR images. The downscaled HR images (512×512) are used as the ground truth for calculating loss and optimizing the model.
+On the other hand, U-Net will be trained on 512×512 SSR-enhanced images as input and the original 1200×1200 masks are resized to 256*256 as ground truth.
 A small dataset are provided in `data` folder. With a total of 80 training images, 10 validation images, and 10 testing images.
 ## Requirements
 
@@ -40,11 +40,18 @@ Install the required libraries using:
 
 ## How To Run
 
+
+To generate the resized masks with center crop and erosion:
+    python erode_mask.py
+It will create `eroded_mask` folders under the train_tmp, val_tmp, and test_tmp folders.
+
 ### Step 1: Train SSR Model
 
 Run the training process for the SSR model:
 
-    python3 main.py --model ssr --mode train 
+    python3 main.py --model ssr --mode train --device `your device option`
+
+Device options include ['cpu','cuda','mps'].
 
 The training will generate:
 
@@ -52,9 +59,9 @@ Model checkpoints and training progress CSV are stored in the `ssr_model_checkpo
 
 Example of the best training result within 20 epochs:
 
-    * Train Loss: 0.1815, Train PSNR: 14.80
+    * Train Loss: 0.1672, Train PSNR: 14.39
 
-    * Validation Loss: 0.0681, Val PSNR: 24.71
+    * Validation Loss: 0.0160, Val PSNR: 31.09
 
 ### Step 2: Generate Data for Training U-Net
 
@@ -68,7 +75,7 @@ Generate training and validation data as follows:
         --ssr-test-ground-truth-folder 'data/train_tmp/img' \
         --ssr-output-folder 'ssr_train'
 
-Approximate Average Train PSNR: 25.42
+Approximate Average Train PSNR: 30.99
 
 * Validation Data:
 
@@ -78,7 +85,7 @@ Approximate Average Train PSNR: 25.42
         --ssr-test-ground-truth-folder 'data/val_tmp/img' \
         --ssr-model-output-folder 'ssr_val'
 
-Approximate Average Validation PSNR: 21.7
+Approximate Average Validation PSNR: 27.48
 
 Now, the SSR-enhanced data is located in:
 
@@ -88,9 +95,9 @@ Now, the SSR-enhanced data is located in:
 
 Ground-truth masks are in:
 
-* Training: data/train_tmp/mask
+* Training: data/train_tmp/eroded_mask
 
-* Validation: data/val_tmp/mask
+* Validation: data/val_tmp/eroded_mask
 
 ### Step 3: Train U-Net
 
@@ -106,11 +113,9 @@ Default Inputs:
 
 Example results:
 
-    Epoch 20/20:
+    * Train Loss: 0.6576, IoU: 0.8224, Dice: 0.9007, Precision: 0.8485, Recall: 0.9664, F1: 0.9022
 
-    * Train Loss: 0.6653, Accuracy: 0.8904, IoU: 0.8349, Dice: 0.9091
-
-    * Val Loss: 0.6459, Accuracy: 0.8754, IoU: 0.8287, Dice: 0.9061
+    * Val Loss: 0.6275, IoU: 0.8472, Dice: 0.9172, Precision: 0.8815, Recall: 0.9562, F1: 0.9173
 
 ## Testing the Pipeline
 
@@ -120,8 +125,9 @@ Run the SSR model on the test dataset:
 
     python3 main.py --model ssr --mode test \
     --model-path 'ssr_model_checkpoints/`your_best_ssr_model.pth`'
+    (Add the flag --rescale-size `size(such as 64)` for generating different test size images, default is 128*128)
 
-Average PSNR: 25
+Average PSNR: 31.98
 
 (Default test input folder: data/test_tmp/img)
 
@@ -134,27 +140,30 @@ Run the U-Net model on the SSR-enhanced test dataset:
 
 Results:
 
-    Precision: 0.9270
+    Precision: 0.9232
 
-    Recall: 0.9203
+    Recall: 0.9391
 
-    Dice Coefficient: 0.9228
+    Dice Coefficient: 0.9304
 
-    IoU: 0.8572
+    IoU: 0.8702
 
 
 ## Per-Cell Evaluation
 
-For evaluating individual cells, run 
+For evaluating individual cells, run  `per_cell_evaluation.ipynb`
 
+<<<<<<< HEAD
     python3 per_cell_evaluation.py
 Default ground-truth folder is `data/test_tmp/mask/` and prediction folder is `unet_outputs/`
+=======
+>>>>>>> e776f08 (Update latest files)
 
 The following results were obtained:
 
-    Average Dice Score (Saved Images): 0.9066
-
-    Average IoU Score (Saved Images): 0.8365
+    Average Precision: 0.8301
+    Average Recall: 0.6252
+    Average F1-Score: 0.7039
 
 ## Directory Structure
 
@@ -177,3 +186,16 @@ The following results were obtained:
 [MICCAI 2024 Oral] The official code of "TinyU-Net: Lighter Yet Better U-Net with Cascaded Multi-receptive Fields".https://github.com/ChenJunren-Lab/TinyU-Net
 
 [NTIRE 2022, EfficientSR] MobileSR: A Mobile-friendly Transformer for Efficient Image Super-Resolution. https://github.com/sunny2109/MobileSR-NTIRE2022
+
+[BBBC041-Seg Dataset]
+@article{DEPTO2021101653,
+  title = {Automatic segmentation of blood cells from microscopic slides: A comparative analysis},
+  journal = {Tissue and Cell},
+  volume = {73},
+  pages = {101653},
+  year = {2021},
+  issn = {0040-8166},
+  doi = {https://doi.org/10.1016/j.tice.2021.101653},
+  url = {https://www.sciencedirect.com/science/article/pii/S0040816621001695},
+  author = {Deponker Sarker Depto and Shazidur Rahman and Md. Mekayel Hosen and Mst Shapna Akter and Tamanna Rahman Reme and Aimon Rahman and Hasib Zunair and M. Sohel Rahman and M.R.C. Mahdy}
+}
