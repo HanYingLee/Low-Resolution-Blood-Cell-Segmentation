@@ -153,12 +153,6 @@ Results:
 
 For evaluating individual cells, run  `per_cell_evaluation.ipynb`
 
-<<<<<<< HEAD
-    python3 per_cell_evaluation.py
-Default ground-truth folder is `data/test_tmp/mask/` and prediction folder is `unet_outputs/`
-=======
->>>>>>> e776f08 (Update latest files)
-
 The following results were obtained:
 
     Average Precision: 0.8301
